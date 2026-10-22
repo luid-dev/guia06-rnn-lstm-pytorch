@@ -1,0 +1,582 @@
+{
+  "configuracion": {
+    "n_puntos": 600,
+    "epochs": 50,
+    "lr": 0.01,
+    "hidden_base": 16,
+    "prop_train": 0.8,
+    "semillas": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "torch": "2.14.1"
+  },
+  "actividad_1_dimensiones": {
+    "X": [
+      590,
+      10,
+      1
+    ],
+    "y": [
+      590,
+      1
+    ],
+    "X_train": [
+      472,
+      10,
+      1
+    ],
+    "X_test": [
+      118,
+      10,
+      1
+    ],
+    "rnn_out": [
+      590,
+      10,
+      16
+    ],
+    "h_n": [
+      1,
+      590,
+      16
+    ],
+    "out_final": [
+      590,
+      16
+    ],
+    "pred": [
+      590,
+      1
+    ]
+  },
+  "modelo_base": {
+    "perdida_final": 0.003088920144364238,
+    "mse": 0.0030833533965051174,
+    "rmse": 0.05552795148846315,
+    "mae": 0.049193236976861954,
+    "r2": 0.9932106665584196
+  },
+  "actividad_2_hiperparametros": {
+    "parametros": {
+      "SimpleRNNModel_H16": 321,
+      "SimpleRNNModel_H64": 4353,
+      "LSTMModel_H16": 1233,
+      "LSTMModel_H64": 17217
+    },
+    "factor_16_a_64": 13.560747663551401,
+    "hidden_16": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 10,
+      "hidden_size": 16,
+      "perdida_train_final_media": 0.002875426271930337,
+      "perdida_train_final_std": 0.0008080580073366391,
+      "mse_test_media": 0.0028066536178812385,
+      "mse_test_std": 0.0009858244431345468,
+      "mse_test_por_semilla": [
+        0.0030833533965051174,
+        0.0035252352245151997,
+        0.0032013170421123505,
+        0.0008577684639021754,
+        0.0033655939623713493
+      ],
+      "rmse_test_media": 0.05175664983800006,
+      "r2_test_media": 0.9938199405117294,
+      "oscilaciones_media": 17.4,
+      "norma_grad_max_media": 1.3874945640563965,
+      "ms_por_epoca_media": 0.7569463359996007,
+      "rho": 0.7141687943528567,
+      "vida_media_pasos": 2.059040947414413,
+      "sensibilidad_paso_mas_antiguo": 0.06478830426931381,
+      "fraccion_mas_alla_de_10_pasos": 0.0,
+      "parametros": 321
+    },
+    "hidden_64": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 10,
+      "hidden_size": 64,
+      "perdida_train_final_media": 0.0008673263670061715,
+      "perdida_train_final_std": 0.0004953142283837421,
+      "mse_test_media": 0.0009045545870321803,
+      "mse_test_std": 0.0005356914714237228,
+      "mse_test_por_semilla": [
+        0.0007410489488393068,
+        0.000945397128816694,
+        0.0010333132231608033,
+        0.001735121593810618,
+        6.78920405334793e-05
+      ],
+      "rmse_test_media": 0.028001833664509406,
+      "r2_test_media": 0.9980082325782933,
+      "oscilaciones_media": 18.8,
+      "norma_grad_max_media": 7.263211870193482,
+      "ms_por_epoca_media": 1.035482499999489,
+      "rho": 0.8127255856224316,
+      "vida_media_pasos": 3.3426953085644135,
+      "sensibilidad_paso_mas_antiguo": 0.13960418105125427,
+      "fraccion_mas_alla_de_10_pasos": 0.0,
+      "parametros": 4353
+    }
+  },
+  "actividad_3_ventanas": {
+    "seq_len_10": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 10,
+      "hidden_size": 16,
+      "perdida_train_final_media": 0.002875426271930337,
+      "perdida_train_final_std": 0.0008080580073366391,
+      "mse_test_media": 0.0028066536178812385,
+      "mse_test_std": 0.0009858244431345468,
+      "mse_test_por_semilla": [
+        0.0030833533965051174,
+        0.0035252352245151997,
+        0.0032013170421123505,
+        0.0008577684639021754,
+        0.0033655939623713493
+      ],
+      "rmse_test_media": 0.05175664983800006,
+      "r2_test_media": 0.9938199405117294,
+      "oscilaciones_media": 17.4,
+      "norma_grad_max_media": 1.3874945640563965,
+      "ms_por_epoca_media": 0.7569463359996007,
+      "rho": 0.7141687943528567,
+      "vida_media_pasos": 2.059040947414413,
+      "sensibilidad_paso_mas_antiguo": 0.06478830426931381,
+      "fraccion_mas_alla_de_10_pasos": 0.0,
+      "parametros": 321
+    },
+    "seq_len_50": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 50,
+      "hidden_size": 16,
+      "perdida_train_final_media": 0.001624432997778058,
+      "perdida_train_final_std": 0.0006361110007231411,
+      "mse_test_media": 0.001574440492549911,
+      "mse_test_std": 0.0007940062120129182,
+      "mse_test_por_semilla": [
+        0.0009048590436577797,
+        0.002475869143381715,
+        0.0016455217264592648,
+        0.0004637106612790376,
+        0.002382241887971759
+      ],
+      "rmse_test_media": 0.03814923392750963,
+      "r2_test_media": 0.9966253279376709,
+      "oscilaciones_media": 17.4,
+      "norma_grad_max_media": 1.3517249345779419,
+      "ms_por_epoca_media": 2.7986799999980576,
+      "rho": 0.8896555129009383,
+      "vida_media_pasos": 5.928340035703369,
+      "sensibilidad_paso_mas_antiguo": 0.0023750285618007183,
+      "fraccion_mas_alla_de_10_pasos": 0.30839696526527405,
+      "parametros": 321
+    }
+  },
+  "reto_lstm": {
+    "rnn_h16": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 50,
+      "hidden_size": 16,
+      "perdida_train_final_media": 0.001624432997778058,
+      "perdida_train_final_std": 0.0006361110007231411,
+      "mse_test_media": 0.001574440492549911,
+      "mse_test_std": 0.0007940062120129182,
+      "mse_test_por_semilla": [
+        0.0009048590436577797,
+        0.002475869143381715,
+        0.0016455217264592648,
+        0.0004637106612790376,
+        0.002382241887971759
+      ],
+      "rmse_test_media": 0.03814923392750963,
+      "r2_test_media": 0.9966253279376709,
+      "oscilaciones_media": 17.4,
+      "norma_grad_max_media": 1.3517249345779419,
+      "ms_por_epoca_media": 2.7986799999980576,
+      "rho": 0.8896555129009383,
+      "vida_media_pasos": 5.928340035703369,
+      "sensibilidad_paso_mas_antiguo": 0.0023750285618007183,
+      "fraccion_mas_alla_de_10_pasos": 0.30839696526527405,
+      "parametros": 321
+    },
+    "lstm_h16": {
+      "modelo": "LSTMModel",
+      "seq_len": 50,
+      "hidden_size": 16,
+      "perdida_train_final_media": 0.000665440974989906,
+      "perdida_train_final_std": 0.00030018051567628194,
+      "mse_test_media": 0.0005392286169808358,
+      "mse_test_std": 0.00011220372345678097,
+      "mse_test_por_semilla": [
+        0.0005176803679205477,
+        0.0004786951176356524,
+        0.0006130169495008886,
+        0.00038006482645869255,
+        0.0007066858233883977
+      ],
+      "rmse_test_media": 0.023093937233785673,
+      "r2_test_media": 0.9988442117819357,
+      "oscilaciones_media": 9.6,
+      "norma_grad_max_media": 0.5799164414405823,
+      "ms_por_epoca_media": 6.931775827997626,
+      "rho": 0.8342073222600486,
+      "vida_media_pasos": 3.8237683394599844,
+      "sensibilidad_paso_mas_antiguo": 6.812751234974712e-05,
+      "fraccion_mas_alla_de_10_pasos": 0.15240122377872467,
+      "parametros": 1233
+    },
+    "rnn_h33_control": {
+      "modelo": "SimpleRNNModel",
+      "seq_len": 50,
+      "hidden_size": 33,
+      "perdida_train_final_media": 0.00045099858107278123,
+      "perdida_train_final_std": 0.0002920568254194485,
+      "mse_test_media": 0.0004700936726294458,
+      "mse_test_std": 0.00022010550651078428,
+      "mse_test_por_semilla": [
+        0.0002482010459061712,
+        0.000586642068810761,
+        0.0008195195696316659,
+        0.00023073720512911677,
+        0.00046536847366951406
+      ],
+      "rmse_test_media": 0.02107295641135006,
+      "r2_test_media": 0.9989923963513967,
+      "oscilaciones_media": 19.0,
+      "norma_grad_max_media": 2.175099754333496,
+      "ms_por_epoca_media": 3.6744495000002644,
+      "rho": 0.8457780137688667,
+      "vida_media_pasos": 4.13823291510426,
+      "sensibilidad_paso_mas_antiguo": 0.00019617786165326834,
+      "fraccion_mas_alla_de_10_pasos": 0.19811402261257172,
+      "parametros": 1222
+    },
+    "compuerta_olvido_media": {
+      "inicial": 0.4968094527721405,
+      "entrenada": 0.5235521852970123
+    },
+    "barrido_seq_len": {
+      "RNN · H=16": [
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 10,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.002875426271930337,
+          "perdida_train_final_std": 0.0008080580073366391,
+          "mse_test_media": 0.0028066536178812385,
+          "mse_test_std": 0.0009858244431345468,
+          "mse_test_por_semilla": [
+            0.0030833533965051174,
+            0.0035252352245151997,
+            0.0032013170421123505,
+            0.0008577684639021754,
+            0.0033655939623713493
+          ],
+          "rmse_test_media": 0.05175664983800006,
+          "r2_test_media": 0.9938199405117294,
+          "oscilaciones_media": 17.4,
+          "norma_grad_max_media": 1.3874945640563965,
+          "ms_por_epoca_media": 0.7569463359996007,
+          "rho": 0.7141687943528567,
+          "vida_media_pasos": 2.059040947414413,
+          "sensibilidad_paso_mas_antiguo": 0.06478830426931381,
+          "fraccion_mas_alla_de_10_pasos": 0.0,
+          "parametros": 321
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 25,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.0009254522563423961,
+          "perdida_train_final_std": 0.0006701309294790368,
+          "mse_test_media": 0.0010568292462266981,
+          "mse_test_std": 0.000825054769150063,
+          "mse_test_por_semilla": [
+            0.0004310349759180099,
+            0.0025259333197027445,
+            0.0007987884455360472,
+            0.00020929085440002382,
+            0.0013190986355766654
+          ],
+          "rmse_test_media": 0.03001383547148599,
+          "r2_test_media": 0.9976699901755012,
+          "oscilaciones_media": 17.2,
+          "norma_grad_max_media": 1.3390908718109131,
+          "ms_por_epoca_media": 1.463130332002038,
+          "rho": 0.8824019157473004,
+          "vida_media_pasos": 5.5404064904971335,
+          "sensibilidad_paso_mas_antiguo": 0.029948145151138306,
+          "fraccion_mas_alla_de_10_pasos": 0.26035287976264954,
+          "parametros": 321
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 50,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.001624432997778058,
+          "perdida_train_final_std": 0.0006361110007231411,
+          "mse_test_media": 0.001574440492549911,
+          "mse_test_std": 0.0007940062120129182,
+          "mse_test_por_semilla": [
+            0.0009048590436577797,
+            0.002475869143381715,
+            0.0016455217264592648,
+            0.0004637106612790376,
+            0.002382241887971759
+          ],
+          "rmse_test_media": 0.03814923392750963,
+          "r2_test_media": 0.9966253279376709,
+          "oscilaciones_media": 17.4,
+          "norma_grad_max_media": 1.3517249345779419,
+          "ms_por_epoca_media": 2.7986799999980576,
+          "rho": 0.8896555129009383,
+          "vida_media_pasos": 5.928340035703369,
+          "sensibilidad_paso_mas_antiguo": 0.0023750285618007183,
+          "fraccion_mas_alla_de_10_pasos": 0.30839696526527405,
+          "parametros": 321
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 100,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.001397547108354047,
+          "perdida_train_final_std": 0.000698725865033686,
+          "mse_test_media": 0.001303366618230939,
+          "mse_test_std": 0.0006838596861555615,
+          "mse_test_por_semilla": [
+            0.000544391805306077,
+            0.002245393581688404,
+            0.001565443817526102,
+            0.00048619776498526335,
+            0.001675406121648848
+          ],
+          "rmse_test_media": 0.03465301941889519,
+          "r2_test_media": 0.9974161181345664,
+          "oscilaciones_media": 17.0,
+          "norma_grad_max_media": 1.3152415990829467,
+          "ms_por_epoca_media": 5.100086667998767,
+          "rho": 0.9077276009736561,
+          "vida_media_pasos": 7.15980187414292,
+          "sensibilidad_paso_mas_antiguo": 3.752051998162642e-05,
+          "fraccion_mas_alla_de_10_pasos": 0.3412834703922272,
+          "parametros": 321
+        }
+      ],
+      "LSTM · H=16": [
+        {
+          "modelo": "LSTMModel",
+          "seq_len": 10,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.002579626766964793,
+          "perdida_train_final_std": 0.0010414143301547816,
+          "mse_test_media": 0.0026000184705480935,
+          "mse_test_std": 0.0011622057191705013,
+          "mse_test_por_semilla": [
+            0.00490841269493103,
+            0.001988416537642479,
+            0.0019013142446056008,
+            0.0019212630577385426,
+            0.002280685817822814
+          ],
+          "rmse_test_media": 0.0499689065759999,
+          "r2_test_media": 0.9942749368269382,
+          "oscilaciones_media": 10.8,
+          "norma_grad_max_media": 0.600781774520874,
+          "ms_por_epoca_media": 1.6119253319975542,
+          "rho": 0.7168300621210598,
+          "vida_media_pasos": 2.0820452713484,
+          "sensibilidad_paso_mas_antiguo": 0.04759563133120537,
+          "fraccion_mas_alla_de_10_pasos": 0.0,
+          "parametros": 1233
+        },
+        {
+          "modelo": "LSTMModel",
+          "seq_len": 25,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.0006704421772155911,
+          "perdida_train_final_std": 0.00032637753076422265,
+          "mse_test_media": 0.0005698730412404985,
+          "mse_test_std": 0.00015509048218092204,
+          "mse_test_por_semilla": [
+            0.0007105262484401464,
+            0.0007412636769004166,
+            0.00039846767322160304,
+            0.00037338363472372293,
+            0.0006257239729166031
+          ],
+          "rmse_test_media": 0.023636224763787045,
+          "r2_test_media": 0.9987435909919833,
+          "oscilaciones_media": 10.0,
+          "norma_grad_max_media": 0.5750607371330261,
+          "ms_por_epoca_media": 3.5005818240006192,
+          "rho": 0.8062556099506318,
+          "vida_media_pasos": 3.2186340773995816,
+          "sensibilidad_paso_mas_antiguo": 0.004876537248492241,
+          "fraccion_mas_alla_de_10_pasos": 0.10524863004684448,
+          "parametros": 1233
+        },
+        {
+          "modelo": "LSTMModel",
+          "seq_len": 50,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.000665440974989906,
+          "perdida_train_final_std": 0.00030018051567628194,
+          "mse_test_media": 0.0005392286169808358,
+          "mse_test_std": 0.00011220372345678097,
+          "mse_test_por_semilla": [
+            0.0005176803679205477,
+            0.0004786951176356524,
+            0.0006130169495008886,
+            0.00038006482645869255,
+            0.0007066858233883977
+          ],
+          "rmse_test_media": 0.023093937233785673,
+          "r2_test_media": 0.9988442117819357,
+          "oscilaciones_media": 9.6,
+          "norma_grad_max_media": 0.5799164414405823,
+          "ms_por_epoca_media": 6.931775827997626,
+          "rho": 0.8342073222600486,
+          "vida_media_pasos": 3.8237683394599844,
+          "sensibilidad_paso_mas_antiguo": 6.812751234974712e-05,
+          "fraccion_mas_alla_de_10_pasos": 0.15240122377872467,
+          "parametros": 1233
+        },
+        {
+          "modelo": "LSTMModel",
+          "seq_len": 100,
+          "hidden_size": 16,
+          "perdida_train_final_media": 0.0005981680646073073,
+          "perdida_train_final_std": 0.0002571536842099367,
+          "mse_test_media": 0.0005514444143045694,
+          "mse_test_std": 0.00010943649002387597,
+          "mse_test_por_semilla": [
+            0.0006709404406137764,
+            0.0003972622798755765,
+            0.0006460051517933607,
+            0.00044702194281853735,
+            0.0005959922564215958
+          ],
+          "rmse_test_media": 0.023361286998490594,
+          "r2_test_media": 0.9989067794467992,
+          "oscilaciones_media": 8.8,
+          "norma_grad_max_media": 0.5644236624240875,
+          "ms_por_epoca_media": 13.028136991999418,
+          "rho": 0.8427387898906415,
+          "vida_media_pasos": 4.051165190992749,
+          "sensibilidad_paso_mas_antiguo": 3.029650486041646e-08,
+          "fraccion_mas_alla_de_10_pasos": 0.15199461579322815,
+          "parametros": 1233
+        }
+      ],
+      "RNN · H=33 (control)": [
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 10,
+          "hidden_size": 33,
+          "perdida_train_final_media": 0.0006809338869061321,
+          "perdida_train_final_std": 0.00018759356452963436,
+          "mse_test_media": 0.0007529000111389905,
+          "mse_test_std": 0.00030970957556279607,
+          "mse_test_por_semilla": [
+            0.0013350057415664196,
+            0.00047487844130955637,
+            0.0007969552534632385,
+            0.0006002270965836942,
+            0.0005574335227720439
+          ],
+          "rmse_test_media": 0.02693387895972029,
+          "r2_test_media": 0.9983421655832488,
+          "oscilaciones_media": 19.4,
+          "norma_grad_max_media": 1.9084661483764649,
+          "ms_por_epoca_media": 0.963424000001396,
+          "rho": 0.74610532429382,
+          "vida_media_pasos": 2.366590605638633,
+          "sensibilidad_paso_mas_antiguo": 0.07053107023239136,
+          "fraccion_mas_alla_de_10_pasos": 0.0,
+          "parametros": 1222
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 25,
+          "hidden_size": 33,
+          "perdida_train_final_media": 0.0003168750961776823,
+          "perdida_train_final_std": 0.00027196527203479014,
+          "mse_test_media": 0.00032430563296657053,
+          "mse_test_std": 0.00020648669494738165,
+          "mse_test_por_semilla": [
+            0.00026208421331830323,
+            0.0006922662723809481,
+            0.0002829641161952168,
+            5.562409933190793e-05,
+            0.0003285894636064768
+          ],
+          "rmse_test_media": 0.016981339864332163,
+          "r2_test_media": 0.9992849977374328,
+          "oscilaciones_media": 20.4,
+          "norma_grad_max_media": 2.0960559844970703,
+          "ms_por_epoca_media": 2.075690007997764,
+          "rho": 0.8671125891853049,
+          "vida_media_pasos": 4.8612415881985545,
+          "sensibilidad_paso_mas_antiguo": 0.019966566935181618,
+          "fraccion_mas_alla_de_10_pasos": 0.22563429176807404,
+          "parametros": 1222
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 50,
+          "hidden_size": 33,
+          "perdida_train_final_media": 0.00045099858107278123,
+          "perdida_train_final_std": 0.0002920568254194485,
+          "mse_test_media": 0.0004700936726294458,
+          "mse_test_std": 0.00022010550651078428,
+          "mse_test_por_semilla": [
+            0.0002482010459061712,
+            0.000586642068810761,
+            0.0008195195696316659,
+            0.00023073720512911677,
+            0.00046536847366951406
+          ],
+          "rmse_test_media": 0.02107295641135006,
+          "r2_test_media": 0.9989923963513967,
+          "oscilaciones_media": 19.0,
+          "norma_grad_max_media": 2.175099754333496,
+          "ms_por_epoca_media": 3.6744495000002644,
+          "rho": 0.8457780137688667,
+          "vida_media_pasos": 4.13823291510426,
+          "sensibilidad_paso_mas_antiguo": 0.00019617786165326834,
+          "fraccion_mas_alla_de_10_pasos": 0.19811402261257172,
+          "parametros": 1222
+        },
+        {
+          "modelo": "SimpleRNNModel",
+          "seq_len": 100,
+          "hidden_size": 33,
+          "perdida_train_final_media": 0.006022267873049714,
+          "perdida_train_final_std": 0.008152378994682869,
+          "mse_test_media": 0.005706496415950823,
+          "mse_test_std": 0.009271551685937051,
+          "mse_test_por_semilla": [
+            0.0009869656059890985,
+            0.00017991788627114147,
+            0.0031909567769616842,
+            6.16498218732886e-05,
+            0.024112991988658905
+          ],
+          "rmse_test_media": 0.05289064724334611,
+          "r2_test_media": 0.9886870569550581,
+          "oscilaciones_media": 21.0,
+          "norma_grad_max_media": 4.546998786926269,
+          "ms_por_epoca_media": 7.607880491998003,
+          "rho": 0.9209319708967003,
+          "vida_media_pasos": 8.415135016801877,
+          "sensibilidad_paso_mas_antiguo": 9.549053356749937e-05,
+          "fraccion_mas_alla_de_10_pasos": 0.33144551515579224,
+          "parametros": 1222
+        }
+      ]
+    }
+  }
+}

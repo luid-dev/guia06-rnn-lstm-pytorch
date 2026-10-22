@@ -1,0 +1,118 @@
+
+================================================================================================
+ACTIVIDAD 1 · Inspección de dimensiones (tensores 3D)
+================================================================================================
+X.shape: torch.Size([590, 10, 1])
+y.shape: torch.Size([590, 1])
+
+X.shape = (590, 10, 1) -> [Batch Size, Sequence Length, Features]
+  eje 0 · Batch Size      = 590  ventanas deslizantes extraídas de la serie (600 - 10 = 590)
+  eje 1 · Sequence Length =  10  pasos temporales consecutivos que la red lee antes de predecir
+  eje 2 · Features        =   1  variables por paso: un único valor escalar sin(t)
+y.shape = (590, 1) -> [Batch Size, Output]: el valor siguiente a cada ventana
+Partición cronológica 80/20: X_train (472, 10, 1) · X_test (118, 10, 1)
+
+Flujo de dimensiones dentro de SimpleRNNModel:
+  x                      (590, 10, 1)    entrada
+  out, h_n = rnn(x)      (590, 10, 16)   out: h_t de los 10 pasos (hidden_size = 16)
+                         (1, 590, 16)    h_n: último estado oculto [num_layers, Batch, Hidden]
+  out[:, -1, :]          (590, 16)       solo el último paso temporal (Many-to-One)
+  pred = fc(out_final)   (590, 1)        una predicción por ventana
+  ¿out[:, -1, :] es igual a h_n[0]? True
+Gráfica guardada: resultados/01_serie_y_ventanas.png
+
+================================================================================================
+SECCIÓN 3 · Modelo base: RNN simple (hidden_size = 16, SEQ_LEN = 10, 50 épocas)
+================================================================================================
+Epoch [10/50], Loss: 0.131990
+Epoch [20/50], Loss: 0.047066
+Epoch [30/50], Loss: 0.019789
+Epoch [40/50], Loss: 0.006840
+Epoch [50/50], Loss: 0.003089
+¡Entrenamiento de la RNN Simple finalizado con éxito!
+Predicción sobre el tramo de prueba: MSE = 0.003083 · RMSE = 0.0555 · MAE = 0.0492 · R² = 0.9932
+Gráfica guardada: resultados/02_rnn_base.png
+
+================================================================================================
+ACTIVIDAD 2 · Modificación de hiperparámetros (hidden_size 16 -> 64)
+================================================================================================
+
+SimpleRNNModel(hidden_size=16): 321 parámetros entrenables
+  rnn.weight_ih_l0  (16, 1)        16
+  rnn.weight_hh_l0  (16, 16)      256
+  rnn.bias_ih_l0    (16,)          16
+  rnn.bias_hh_l0    (16,)          16
+  fc.weight         (1, 16)        16
+  fc.bias           (1,)            1
+  Fórmula H·I + H·H + 2H + O·H + O = 321 (coincide con sum(p.numel()))
+
+SimpleRNNModel(hidden_size=64): 4,353 parámetros entrenables
+  rnn.weight_ih_l0  (64, 1)        64
+  rnn.weight_hh_l0  (64, 64)    4,096
+  rnn.bias_ih_l0    (64,)          64
+  rnn.bias_hh_l0    (64,)          64
+  fc.weight         (1, 64)        64
+  fc.bias           (1,)            1
+  Fórmula H·I + H·H + 2H + O·H + O = 4,353 (coincide con sum(p.numel()))
+
+Pasar de 16 a 64 neuronas multiplica los parámetros por 13.56: el término recurrente H·H crece de 256 a 4096 pesos (x16).
+LSTMModel(hidden_size=16): 1,233 parámetros = 4·(H·I + H·H + 2H) + O·H + O = 1,233
+LSTMModel(hidden_size=64): 17,217 parámetros = 4·(H·I + H·H + 2H) + O·H + O = 17,217
+
+Resultados promediados sobre 5 semillas (media ± desviación estándar):
+Experimento               Parám.        Loss train final                MSE test  Oscil.  |∇| máx  ms/ép.
+RNN · hidden_size=16         321     0.002875 ± 0.000808     0.002807 ± 0.000986    17.4     1.39     0.8
+RNN · hidden_size=64       4,353     0.000867 ± 0.000495     0.000905 ± 0.000536    18.8     7.26     1.0
+Oscil. = épocas en las que la pérdida subió respecto a la anterior (de 49 transiciones).
+Gráfica guardada: resultados/03_hidden_size.png
+
+================================================================================================
+ACTIVIDAD 3 · Análisis de ventanas temporales (SEQ_LEN 10 -> 50)
+================================================================================================
+
+Resultados promediados sobre 5 semillas (media ± desviación estándar):
+Experimento               Parám.        Loss train final                MSE test  Oscil.  |∇| máx  ms/ép.
+RNN · SEQ_LEN=10             321     0.002875 ± 0.000808     0.002807 ± 0.000986    17.4     1.39     0.8
+RNN · SEQ_LEN=50             321     0.001624 ± 0.000636     0.001574 ± 0.000794    17.4     1.35     2.8
+Oscil. = épocas en las que la pérdida subió respecto a la anterior (de 49 transiciones).
+
+Memoria efectiva de la RNN (sensibilidad |∂L/∂x_t| promedio, normalizada al paso más sensible):
+  SEQ_LEN=10: ρ = 0.714 por paso -> vida media ≈ 2.1 pasos; el paso más antiguo conserva 6.479 % de la señal
+  SEQ_LEN=50: ρ = 0.890 por paso -> vida media ≈ 5.9 pasos; el paso más antiguo conserva 0.238 % de la señal
+  Con SEQ_LEN=50, los 10 pasos más recientes concentran 69.2 % de la sensibilidad total y los 40 más antiguos (80 % de la ventana) solo 30.8 %.
+Gráfica guardada: resultados/04_ventanas_rnn.png
+
+================================================================================================
+RETO AVANZADO · LSTM frente a RNN simple con secuencias largas (SEQ_LEN = 50)
+================================================================================================
+
+Resultados promediados sobre 5 semillas (media ± desviación estándar):
+Experimento               Parám.        Loss train final                MSE test  Oscil.  |∇| máx  ms/ép.
+RNN · H=16                   321     0.001624 ± 0.000636     0.001574 ± 0.000794    17.4     1.35     2.8
+LSTM · H=16                1,233     0.000665 ± 0.000300     0.000539 ± 0.000112     9.6     0.58     6.9
+RNN · H=33 (control)       1,222     0.000451 ± 0.000292     0.000470 ± 0.000220    19.0     2.18     3.7
+Oscil. = épocas en las que la pérdida subió respecto a la anterior (de 49 transiciones).
+
+Memoria efectiva con SEQ_LEN=50 (sensibilidad |∂L/∂x_t|):
+  RNN · H=16           ρ = 0.890 · vida media ≈ 5.9 pasos · paso más antiguo = 2.38e-03
+  LSTM · H=16          ρ = 0.834 · vida media ≈ 3.8 pasos · paso más antiguo = 6.81e-05
+  RNN · H=33 (control) ρ = 0.846 · vida media ≈ 4.1 pasos · paso más antiguo = 1.96e-04
+  Compuerta de olvido media de la LSTM: 0.497 al inicializar -> 0.524 entrenada
+
+Respuesta a la pregunta de análisis:
+  Con SEQ_LEN=50 y condiciones idénticas se ajusta mejor la LSTM: MSE de prueba 0.000539 (LSTM) frente a 0.001574 (RNN), 2.9x de diferencia.
+  Convergencia: 9.6 oscilaciones de la pérdida en la LSTM frente a 17.4 en la RNN; desviación entre semillas 0.000112 frente a 0.000794.
+  Control: una RNN con H=33 (1,222 parámetros, la LSTM tiene 1,233) logra MSE 0.000470, pero con 19.0 oscilaciones y |∇| máx 2.18 (LSTM: 0.58).
+Gráfica guardada: resultados/05_rnn_vs_lstm_perdida.png
+Gráfica guardada: resultados/06_rnn_vs_lstm_prediccion.png
+Gráfica guardada: resultados/07_sensibilidad_rnn_vs_lstm.png
+
+Barrido de SEQ_LEN · MSE de prueba (media ± desviación de 5 semillas) y ms por época:
+SEQ_LEN                          RNN · H=16                       LSTM · H=16              RNN · H=33 (control)
+10             0.002807 ± 0.000986   0.8 ms      0.002600 ± 0.001162   1.6 ms      0.000753 ± 0.000310   1.0 ms
+25             0.001057 ± 0.000825   1.5 ms      0.000570 ± 0.000155   3.5 ms      0.000324 ± 0.000206   2.1 ms
+50             0.001574 ± 0.000794   2.8 ms      0.000539 ± 0.000112   6.9 ms      0.000470 ± 0.000220   3.7 ms
+100            0.001303 ± 0.000684   5.1 ms      0.000551 ± 0.000109  13.0 ms      0.005706 ± 0.009272   7.6 ms
+Gráfica guardada: resultados/08_barrido_seq_len.png
+
+Métricas guardadas en resultados/metricas.json · tiempo total: 14.4 s
