@@ -97,7 +97,7 @@ Para entrenar, *Backpropagation Through Time* desenrolla la red en el tiempo. El
 \frac{\partial \mathcal{L}}{\partial h_t} = \frac{\partial \mathcal{L}}{\partial h_T}\prod_{k=t+1}^{T} \frac{\partial h_k}{\partial h_{k-1}}, \qquad \frac{\partial h_k}{\partial h_{k-1}} = \mathrm{diag}\left(1 - h_k^{2}\right) W_{hh}
 ```
 
-Si cada factor reduce la señal en promedio por un factor $\rho < 1$, la señal decae como $\rho^{\,T-t}$, es decir, de forma **exponencial**. Como $\tanh' \le 1$, es fácil que eso pase. La red deja de recibir información útil para aprender de los eventos lejanos y solo "recuerda" los recientes. Si $\rho > 1$, ocurre lo contrario y el gradiente explota.
+Si cada factor reduce la señal en promedio por un factor $\rho < 1$, la señal decae como $\rho^{T-t}$, es decir, de forma **exponencial**. Como $\tanh' \le 1$, es fácil que eso pase. La red deja de recibir información útil para aprender de los eventos lejanos y solo "recuerda" los recientes. Si $\rho > 1$, ocurre lo contrario y el gradiente explota.
 
 ### 3.3 LSTM
 
@@ -271,7 +271,7 @@ RNN simple (H = 16) con `SEQ_LEN = 10` y `SEQ_LEN = 50`:
    - El paso más antiguo recibe el **0.238 %** de la señal del más reciente, unas 420 veces menos.
    - Los 10 pasos más recientes concentran el **69.2 %** de la sensibilidad total. Los 40 más antiguos, que son el 80 % de la ventana, reciben solo el 30.8 %.
 
-   Si el valor a predecir dependiera de algo ocurrido 50 pasos antes, la RNN recibiría una señal de gradiente 420 veces más débil para aprenderlo. Esa es la "amnesia matemática": el producto de Jacobianas $\mathrm{diag}(1-h^2)\,W_{hh}$ de la sección 3.2, ahora medido en los datos.
+   Si el valor a predecir dependiera de algo ocurrido 50 pasos antes, la RNN recibiría una señal de gradiente 420 veces más débil para aprenderlo. Esa es la "amnesia matemática": el producto de Jacobianas $\mathrm{diag}(1-h^2)\cdot W_{hh}$ de la sección 3.2, ahora medido en los datos.
 
 **Conclusión de la actividad:** en este problema, alargar la ventana no rompe el entrenamiento de la RNN, pero tampoco le da memoria útil. Lo que se agrega al inicio de la ventana le llega a través de una señal atenuada exponencialmente.
 
@@ -371,6 +371,7 @@ Historial de commits, en orden:
 | 6 | `docs: README con arquitectura, actividades y analisis comparativo RNN vs LSTM` | Este documento |
 | 7 | `docs: capturas de pantalla de la ejecucion en VS Code y del repositorio en GitHub` | Carpeta `capturas/` y sección 15 |
 | 8 | `docs: corrige ecuaciones del README para el renderizado de GitHub` | `\operatorname` → `\mathrm`, que GitHub sí permite |
+| 9 | `docs: corrige espaciado de ecuaciones en linea del README` | Quita `\,` dentro de `$...$`, que GitHub mostraba como coma |
 
 Comandos usados, siguiendo la sección 6 de la guía. Hicimos un commit por cada etapa del desarrollo en lugar de un único commit inicial:
 
