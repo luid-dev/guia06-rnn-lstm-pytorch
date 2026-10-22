@@ -94,7 +94,7 @@ Usa las mismas matrices $W_{ih}$ y $W_{hh}$ en todos los pasos (**reciclaje de p
 Para entrenar, *Backpropagation Through Time* desenrolla la red en el tiempo. El gradiente que llega a un paso antiguo $t$ es un **producto de Jacobianas**, una por cada paso que lo separa del final:
 
 ```math
-\frac{\partial \mathcal{L}}{\partial h_t} = \frac{\partial \mathcal{L}}{\partial h_T}\prod_{k=t+1}^{T} \frac{\partial h_k}{\partial h_{k-1}}, \qquad \frac{\partial h_k}{\partial h_{k-1}} = \operatorname{diag}\left(1 - h_k^{2}\right) W_{hh}
+\frac{\partial \mathcal{L}}{\partial h_t} = \frac{\partial \mathcal{L}}{\partial h_T}\prod_{k=t+1}^{T} \frac{\partial h_k}{\partial h_{k-1}}, \qquad \frac{\partial h_k}{\partial h_{k-1}} = \mathrm{diag}\left(1 - h_k^{2}\right) W_{hh}
 ```
 
 Si cada factor reduce la señal en promedio por un factor $\rho < 1$, la señal decae como $\rho^{\,T-t}$, es decir, de forma **exponencial**. Como $\tanh' \le 1$, es fácil que eso pase. La red deja de recibir información útil para aprender de los eventos lejanos y solo "recuerda" los recientes. Si $\rho > 1$, ocurre lo contrario y el gradiente explota.
@@ -114,7 +114,7 @@ h_t &= o_t \odot \tanh(c_t)
 \end{aligned}
 ```
 
-En el camino directo de la celda, $\partial c_t / \partial c_{t-1} = \operatorname{diag}(f_t)$. El gradiente se multiplica por valores de la compuerta de olvido que la propia red aprende a controlar, y no se ve forzado a pasar por $W_{hh}$ y $\tanh'$ en cada paso. Si $f_t \approx 1$, la información y el gradiente recorren muchos pasos sin desvanecerse.
+En el camino directo de la celda, $\partial c_t / \partial c_{t-1} = \mathrm{diag}(f_t)$. El gradiente se multiplica por valores de la compuerta de olvido que la propia red aprende a controlar, y no se ve forzado a pasar por $W_{hh}$ y $\tanh'$ en cada paso. Si $f_t \approx 1$, la información y el gradiente recorren muchos pasos sin desvanecerse.
 
 ## 4. Arquitectura implementada
 
@@ -150,7 +150,7 @@ flowchart LR
   - *MSE / RMSE / R² de prueba*: calidad de la predicción en el tramo no visto.
   - *Oscilaciones*: cantidad de épocas en las que la pérdida **subió** respecto a la anterior (de 49 transiciones). Mide la estabilidad de la convergencia.
   - *Norma máxima del gradiente* ‖∇L‖: los picos indican pasos de entrenamiento bruscos o inestables.
-  - *Sensibilidad temporal*: $s_k = \overline{|\partial \mathcal{L} / \partial x_{T-k}|}$, normalizada a 1, donde $k$ son los pasos hacia atrás desde la predicción. Mide cuánta señal de gradiente llega a cada paso de la entrada. Ajustamos $s_k \approx C\rho^k$ y definimos la **vida media** como $\ln 0.5 / \ln \rho$ pasos.
+  - *Sensibilidad temporal* $s_k$: promedio de $|\partial \mathcal{L} / \partial x_{T-k}|$ sobre las ventanas de prueba, normalizado a 1, donde $k$ son los pasos hacia atrás desde la predicción. Mide cuánta señal de gradiente llega a cada paso de la entrada. Ajustamos $s_k \approx C\rho^k$ y definimos la **vida media** como $\ln 0.5 / \ln \rho$ pasos.
   - *Compuerta de olvido media* $\bar f$ (solo en la LSTM).
 
 **Cambios respecto al código base.** La lógica del código base se mantiene: el bucle `zero_grad → backward → step` con el `print` cada 10 épocas sigue dentro de `entrenar()`, y el código original sin cambios está en el segundo commit del historial. Los cambios fueron:
@@ -271,7 +271,7 @@ RNN simple (H = 16) con `SEQ_LEN = 10` y `SEQ_LEN = 50`:
    - El paso más antiguo recibe el **0.238 %** de la señal del más reciente, unas 420 veces menos.
    - Los 10 pasos más recientes concentran el **69.2 %** de la sensibilidad total. Los 40 más antiguos, que son el 80 % de la ventana, reciben solo el 30.8 %.
 
-   Si el valor a predecir dependiera de algo ocurrido 50 pasos antes, la RNN recibiría una señal de gradiente 420 veces más débil para aprenderlo. Esa es la "amnesia matemática": el producto de Jacobianas $\operatorname{diag}(1-h^2)\,W_{hh}$ de la sección 3.2, ahora medido en los datos.
+   Si el valor a predecir dependiera de algo ocurrido 50 pasos antes, la RNN recibiría una señal de gradiente 420 veces más débil para aprenderlo. Esa es la "amnesia matemática": el producto de Jacobianas $\mathrm{diag}(1-h^2)\,W_{hh}$ de la sección 3.2, ahora medido en los datos.
 
 **Conclusión de la actividad:** en este problema, alargar la ventana no rompe el entrenamiento de la RNN, pero tampoco le da memoria útil. Lo que se agrega al inicio de la ventana le llega a través de una señal atenuada exponencialmente.
 
@@ -370,6 +370,7 @@ Historial de commits, en orden:
 | 5 | `feat: resultados de los experimentos (graficas, metricas y salida de consola)` | Contenido de `resultados/` |
 | 6 | `docs: README con arquitectura, actividades y analisis comparativo RNN vs LSTM` | Este documento |
 | 7 | `docs: capturas de pantalla de la ejecucion en VS Code y del repositorio en GitHub` | Carpeta `capturas/` y sección 15 |
+| 8 | `docs: corrige ecuaciones del README para el renderizado de GitHub` | `\operatorname` → `\mathrm`, que GitHub sí permite |
 
 Comandos usados, siguiendo la sección 6 de la guía. Hicimos un commit por cada etapa del desarrollo en lugar de un único commit inicial:
 
