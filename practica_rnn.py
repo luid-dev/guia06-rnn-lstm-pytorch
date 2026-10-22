@@ -13,6 +13,7 @@ experimento bajo condiciones idénticas. Se ejecuta en este orden:
     Sección 3   · Entrenamiento del modelo base (RNN simple, SEQ_LEN = 10)
     Actividad 2 · Modificación de hiperparámetros (hidden_size 16 -> 64)
     Actividad 3 · Análisis de ventanas temporales (SEQ_LEN 10 -> 50)
+    Reto        · LSTM frente a RNN simple bajo condiciones idénticas (SEQ_LEN = 50)
 
 Uso:
     python practica_rnn.py            # ejecuta todo y guarda las gráficas en resultados/
@@ -43,6 +44,7 @@ DIR_RESULTADOS = Path(__file__).resolve().parent / "resultados"
 
 # Paleta categórica apta para daltonismo; el color sigue al modelo en todas las gráficas
 COLOR_RNN = "#2a78d6"       # azul
+COLOR_LSTM = "#eb6834"      # naranja
 COLOR_VARIANTE = "#1baf7a"  # aqua: segunda configuración de un mismo modelo
 COLOR_REAL = "#52514e"      # gris: serie real
 
@@ -107,6 +109,31 @@ class SimpleRNNModel(nn.Module):
         # Extraemos exclusivamente el último estado temporal (Many-to-One): [batch_size, hidden_size]
         out_final = out[:, -1, :]
         pred = self.fc(out_final)  # [batch_size, output_size]
+        return pred
+
+
+# ---------------------------------------------------------------------------
+# 2b. Reto avanzado: arquitectura LSTM (mismo esquema, nn.RNN -> nn.LSTM)
+# ---------------------------------------------------------------------------
+class LSTMModel(nn.Module):
+    """LSTM de una capa + capa lineal, paradigma Many-to-One.
+
+    f_t = σ(W_f·[h_(t-1), x_t] + b_f)      compuerta de olvido
+    i_t = σ(W_i·[h_(t-1), x_t] + b_i)      compuerta de entrada
+    o_t = σ(W_o·[h_(t-1), x_t] + b_o)      compuerta de salida
+    c_t = f_t ⊙ c_(t-1) + i_t ⊙ tanh(W_c·[h_(t-1), x_t] + b_c)
+    h_t = o_t ⊙ tanh(c_t)
+    """
+
+    def __init__(self, input_size=1, hidden_size=16, output_size=1):
+        super(LSTMModel, self).__init__()
+        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        out, (hn, cn) = self.lstm(x)  # LSTM retorna estado oculto y estado de celda
+        out_final = out[:, -1, :]
+        pred = self.fc(out_final)
         return pred
 
 
@@ -204,6 +231,26 @@ def analizar_memoria(sens):
     }
 
 
+@torch.no_grad()
+def compuerta_olvido_media(model, X):
+    """Valor medio de la compuerta de olvido f_t de una LSTMModel sobre las ventanas X.
+
+    PyTorch guarda las compuertas en el orden [entrada, olvido, celda, salida].
+    f_t ≈ 1 conserva la memoria de la celda y f_t ≈ 0 la borra.
+    """
+    lstm = model.lstm
+    out, _ = lstm(X)
+    h_prev = torch.cat([torch.zeros_like(out[:, :1]), out[:, :-1]], dim=1)  # h_(t-1), con h_(-1) = 0
+    compuertas = X @ lstm.weight_ih_l0.T + lstm.bias_ih_l0 + h_prev @ lstm.weight_hh_l0.T + lstm.bias_hh_l0
+    _, f, _, _ = compuertas.chunk(4, dim=-1)
+    return torch.sigmoid(f).mean().item()
+
+
+def hidden_equivalente(parametros_objetivo):
+    """hidden_size con el que una SimpleRNNModel tiene casi los mismos parámetros que otro modelo."""
+    return min(range(1, 129), key=lambda H: abs(contar_parametros(SimpleRNNModel(1, H, 1)) - parametros_objetivo))
+
+
 _CACHE = {}
 
 
@@ -252,6 +299,7 @@ def repetir_experimento(clase_modelo, seq_len, hidden_size=HIDDEN_BASE):
             "perdida_train_final_std": float(perdidas[:, -1].std()),
             "mse_test_media": float(mse_test.mean()),
             "mse_test_std": float(mse_test.std()),
+            "mse_test_por_semilla": [float(v) for v in mse_test],
             "rmse_test_media": float(np.mean([c["test"]["rmse"] for c in corridas])),
             "r2_test_media": float(np.mean([c["test"]["r2"] for c in corridas])),
             "oscilaciones_media": float(np.mean([(np.diff(p) > 0).sum() for p in perdidas])),
@@ -348,7 +396,7 @@ def actividad_1_dimensiones():
     titulo("ACTIVIDAD 1 · Inspección de dimensiones (tensores 3D)")
     seq_len = 10
     X, y = generar_datos(n_puntos=N_PUNTOS, seq_len=seq_len)
-    X_train, y_train, X_test, y_test = dividir_cronologicamente(X, y)
+    X_train, _, X_test, _ = dividir_cronologicamente(X, y)
 
     print("X.shape:", X.shape)
     print("y.shape:", y.shape)
@@ -461,6 +509,13 @@ def actividad_2_hiperparametros():
     print(f"\nPasar de 16 a 64 neuronas multiplica los parámetros por {factor:.2f}: "
           f"el término recurrente H·H crece de {16 * 16} a {64 * 64} pesos (x16).")
 
+    # La LSTM repite el bloque recurrente cuatro veces (una por compuerta: i, f, g, o)
+    for H in (16, 64):
+        total = contar_parametros(LSTMModel(input_size=I, hidden_size=H, output_size=O))
+        formula = 4 * (H * I + H * H + 2 * H) + O * H + O
+        print(f"LSTMModel(hidden_size={H}): {total:,} parámetros = 4·(H·I + H·H + 2H) + O·H + O = {formula:,}")
+        conteos[f"LSTMModel_H{H}"] = total
+
     # Impacto en el entrenamiento: mismo problema (SEQ_LEN = 10), dos tamaños de estado oculto
     r16 = repetir_experimento(SimpleRNNModel, seq_len=10, hidden_size=16)
     r64 = repetir_experimento(SimpleRNNModel, seq_len=10, hidden_size=64)
@@ -525,10 +580,133 @@ def actividad_3_ventanas():
 
 
 # ---------------------------------------------------------------------------
+# Reto avanzado · LSTM frente a RNN simple (SEQ_LEN = 50)
+# ---------------------------------------------------------------------------
+def reto_lstm():
+    titulo("RETO AVANZADO · LSTM frente a RNN simple con secuencias largas (SEQ_LEN = 50)")
+    L = 50
+    rnn = repetir_experimento(SimpleRNNModel, seq_len=L)
+    lstm = repetir_experimento(LSTMModel, seq_len=L)
+    # Control de capacidad: la LSTM tiene ~4 veces más parámetros que la RNN con el mismo hidden_size
+    h_eq = hidden_equivalente(lstm["parametros"])
+    rnn_eq = repetir_experimento(SimpleRNNModel, seq_len=L, hidden_size=h_eq)
+    modelos = [
+        ("RNN · H=16", rnn, COLOR_RNN, SimpleRNNModel, HIDDEN_BASE),
+        ("LSTM · H=16", lstm, COLOR_LSTM, LSTMModel, HIDDEN_BASE),
+        (f"RNN · H={h_eq} (control)", rnn_eq, COLOR_VARIANTE, SimpleRNNModel, h_eq),
+    ]
+    imprimir_tabla([(nombre, r) for nombre, r, *_ in modelos])
+
+    # Compuerta de olvido de la LSTM al inicializar y después de entrenar
+    f_inicial, f_final = [], []
+    for semilla, corrida in zip(SEMILLAS, lstm["corridas"]):
+        fijar_semilla(semilla)
+        f_inicial.append(compuerta_olvido_media(LSTMModel(1, HIDDEN_BASE, 1), lstm["X_test"]))
+        f_final.append(compuerta_olvido_media(corrida["modelo"], lstm["X_test"]))
+    f_inicial, f_final = float(np.mean(f_inicial)), float(np.mean(f_final))
+
+    print("\nMemoria efectiva con SEQ_LEN=50 (sensibilidad |∂L/∂x_t|):")
+    for nombre, r, *_ in modelos:
+        s = r["resumen"]
+        print(f"  {nombre:<20} ρ = {s['rho']:.3f} · vida media ≈ {s['vida_media_pasos']:.1f} pasos · "
+              f"paso más antiguo = {s['sensibilidad_paso_mas_antiguo']:.2e}")
+    print(f"  Compuerta de olvido media de la LSTM: {f_inicial:.3f} al inicializar -> {f_final:.3f} entrenada")
+
+    # Respuesta a la pregunta de análisis de la guía
+    s_rnn, s_lstm, s_eq = rnn["resumen"], lstm["resumen"], rnn_eq["resumen"]
+    mejor = "LSTM" if s_lstm["mse_test_media"] < s_rnn["mse_test_media"] else "RNN simple"
+    print("\nRespuesta a la pregunta de análisis:")
+    print(f"  Con SEQ_LEN=50 y condiciones idénticas se ajusta mejor la {mejor}: MSE de prueba "
+          f"{s_lstm['mse_test_media']:.6f} (LSTM) frente a {s_rnn['mse_test_media']:.6f} (RNN), "
+          f"{max(s_rnn['mse_test_media'], s_lstm['mse_test_media']) / min(s_rnn['mse_test_media'], s_lstm['mse_test_media']):.1f}x de diferencia.")
+    print(f"  Convergencia: {s_lstm['oscilaciones_media']:.1f} oscilaciones de la pérdida en la LSTM frente a "
+          f"{s_rnn['oscilaciones_media']:.1f} en la RNN; desviación entre semillas {s_lstm['mse_test_std']:.6f} "
+          f"frente a {s_rnn['mse_test_std']:.6f}.")
+    print(f"  Control: una RNN con H={h_eq} ({rnn_eq['parametros']:,} parámetros, la LSTM tiene {lstm['parametros']:,}) "
+          f"logra MSE {s_eq['mse_test_media']:.6f}, pero con {s_eq['oscilaciones_media']:.1f} oscilaciones y "
+          f"|∇| máx {s_eq['norma_grad_max_media']:.2f} (LSTM: {s_lstm['norma_grad_max_media']:.2f}).")
+
+    # Figura 05: convergencia de la pérdida y norma del gradiente
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3.8))
+    for nombre, r, color, *_ in modelos:
+        graficar_curvas(ax1, r["perdidas"], color, nombre)
+        graficar_curvas(ax2, r["normas_grad"], color, nombre)
+    ax1.set(title="Pérdida de entrenamiento (media y rango de 5 semillas)", xlabel="Época",
+            ylabel="MSE (escala log)", yscale="log")
+    ax1.legend()
+    ax2.set(title="Norma del gradiente por época", xlabel="Época", ylabel="‖∇L‖ (escala log)", yscale="log")
+    ax2.legend()
+    fig.suptitle("RNN simple vs LSTM · SEQ_LEN = 50, condiciones idénticas", x=0.01, ha="left")
+    fig.tight_layout()
+    guardar(fig, "05_rnn_vs_lstm_perdida.png")
+
+    # Figura 06: predicción sobre el tramo de prueba (semilla 0)
+    t_test, y_test = rnn["t_test"], rnn["y_test"]
+    pred_rnn, pred_lstm = rnn["corridas"][0]["test"]["pred"], lstm["corridas"][0]["test"]["pred"]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3.8))
+    ax1.plot(t_test, y_test, color=COLOR_REAL, linewidth=3, alpha=0.5, label="Serie real")
+    ax1.plot(t_test, pred_rnn, "--", color=COLOR_RNN, label="RNN · H=16")
+    ax1.plot(t_test, pred_lstm, "--", color=COLOR_LSTM, label="LSTM · H=16")
+    ax1.set(title="Predicción sobre el tramo de prueba", xlabel="t", ylabel="sin(t)")
+    ax1.legend(loc="upper left")
+    ax2.plot(t_test, np.abs(pred_rnn - y_test), color=COLOR_RNN, label="RNN · H=16")
+    ax2.plot(t_test, np.abs(pred_lstm - y_test), color=COLOR_LSTM, label="LSTM · H=16")
+    ax2.set(title="Error absoluto |ŷ - y|", xlabel="t", ylabel="Error absoluto")
+    ax2.legend()
+    fig.tight_layout()
+    guardar(fig, "06_rnn_vs_lstm_prediccion.png")
+
+    # Figura 07: sensibilidad temporal de ambos modelos
+    fig, ax = plt.subplots(figsize=(8, 3.8))
+    graficar_sensibilidad(ax, rnn, COLOR_RNN, "RNN · H=16")
+    graficar_sensibilidad(ax, lstm, COLOR_LSTM, f"LSTM · H=16 (compuerta de olvido media = {f_final:.2f})")
+    ax.set(title="Sensibilidad |∂L/∂x_t| con SEQ_LEN = 50", xlabel="Pasos hacia atrás desde la predicción (k)",
+           ylabel="Sensibilidad relativa (log)", yscale="log")
+    ax.legend()
+    fig.tight_layout()
+    guardar(fig, "07_sensibilidad_rnn_vs_lstm.png")
+
+    # Barrido de longitudes de secuencia: impacto de alargar la ventana
+    longitudes = [10, 25, 50, 100]
+    barrido = {nombre: [repetir_experimento(clase, seq_len=l, hidden_size=h) for l in longitudes]
+               for nombre, _, _, clase, h in modelos}
+    print("\nBarrido de SEQ_LEN · MSE de prueba (media ± desviación de 5 semillas) y ms por época:")
+    print(f"{'SEQ_LEN':<9}" + "".join(f"{nombre:>34}" for nombre in barrido))
+    for i, l in enumerate(longitudes):
+        celdas = [f"{_pm(rs[i]['resumen']['mse_test_media'], rs[i]['resumen']['mse_test_std'])}"
+                  f"  {rs[i]['resumen']['ms_por_epoca_media']:4.1f} ms" for rs in barrido.values()]
+        print(f"{l:<9}" + "".join(f"{c:>34}" for c in celdas))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3.8))
+    for j, ((nombre, _, color, *_), rs) in enumerate(zip(modelos, barrido.values())):
+        ax1.plot(longitudes, [r["resumen"]["mse_test_media"] for r in rs], "o-", color=color, markersize=6,
+                 label=nombre)
+        for l, r in zip(longitudes, rs):  # cada semilla, con un pequeño desplazamiento horizontal por modelo
+            ax1.scatter([l + 2 * (j - 1)] * len(SEMILLAS), r["resumen"]["mse_test_por_semilla"], color=color,
+                        s=14, alpha=0.4, linewidths=0)
+        ax2.plot(longitudes, [r["resumen"]["sensibilidad_paso_mas_antiguo"] for r in rs], "o-", color=color,
+                 markersize=6, label=nombre)
+    ax1.set(title="MSE de prueba según SEQ_LEN (línea = media, puntos = semillas)", xlabel="SEQ_LEN",
+            ylabel="MSE de prueba (escala log)", yscale="log", xticks=longitudes)
+    ax1.legend()
+    ax2.set(title="Señal que llega al paso más antiguo de la ventana", xlabel="SEQ_LEN",
+            ylabel="Sensibilidad relativa (log)", yscale="log", xticks=longitudes)
+    ax2.legend()
+    fig.tight_layout()
+    guardar(fig, "08_barrido_seq_len.png")
+
+    return {
+        "rnn_h16": s_rnn, "lstm_h16": s_lstm, f"rnn_h{h_eq}_control": s_eq,
+        "compuerta_olvido_media": {"inicial": f_inicial, "entrenada": f_final},
+        "barrido_seq_len": {nombre: [r["resumen"] for r in rs] for nombre, rs in barrido.items()},
+    }
+
+
+# ---------------------------------------------------------------------------
 # Programa principal
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Guía 06: RNN simple para series temporales")
+    parser = argparse.ArgumentParser(description="Guía 06: RNN simple y LSTM para series temporales")
     parser.add_argument("--mostrar", action="store_true", help="abre las gráficas además de guardarlas")
     args = parser.parse_args()
     if not args.mostrar:
@@ -545,6 +723,7 @@ def main():
         "modelo_base": modelo_base(),
         "actividad_2_hiperparametros": actividad_2_hiperparametros(),
         "actividad_3_ventanas": actividad_3_ventanas(),
+        "reto_lstm": reto_lstm(),
     }
 
     with open(DIR_RESULTADOS / "metricas.json", "w", encoding="utf-8") as f:
