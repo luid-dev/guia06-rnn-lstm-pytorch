@@ -1,8 +1,8 @@
 # Guía 06 · RNN simple y LSTM para series temporales en PyTorch
 
-> **Curso:** Inteligencia Artificial / Aprendizaje Profundo · Escuela Profesional de Ingeniería de Sistemas
-> **Práctica:** Guía de Laboratorio 06: desarrollo, implementación y versionamiento de redes recurrentes (RNN y LSTM) en VS Code
-> **Autores:** Luidman Zanes y Neptali Barrientos
+> **Curso:** Inteligencia Artificial / Aprendizaje Profundo · Escuela Profesional de Ingeniería de Sistemas\
+> **Práctica:** Guía de Laboratorio 06: desarrollo, implementación y versionamiento de redes recurrentes (RNN y LSTM) en VS Code\
+> **Autores:** Luidman Zanes y Neptali Barrientos\
 > **Repositorio:** https://github.com/luid-dev/guia06-rnn-lstm-pytorch
 
 En esta práctica implementamos en PyTorch una **RNN simple** y una **LSTM** que predicen el siguiente valor de una onda senoidal a partir de una ventana de pasos anteriores (paradigma *Many-to-One*). Además de las tres actividades y del reto de la guía, repetimos cada experimento con **5 semillas** para distinguir las diferencias reales entre modelos de las que solo vienen del azar de la inicialización. También medimos la **"amnesia matemática"** de forma directa, con el gradiente de la pérdida respecto a cada paso de la entrada.
@@ -38,7 +38,8 @@ En esta práctica implementamos en PyTorch una **RNN simple** y una **LSTM** que
 12. [Análisis crítico y limitaciones](#12-análisis-crítico-y-limitaciones)
 13. [Conclusiones](#13-conclusiones)
 14. [Control de versiones](#14-control-de-versiones)
-15. [Referencias](#15-referencias)
+15. [Evidencias de ejecución y publicación](#15-evidencias-de-ejecución-y-publicación)
+16. [Referencias](#16-referencias)
 
 ---
 
@@ -368,6 +369,7 @@ Historial de commits, en orden:
 | 4 | `feat: modelo LSTM y comparacion con la RNN simple en secuencias largas` | `LSTMModel`, reto, control de capacidad y barrido de `SEQ_LEN` |
 | 5 | `feat: resultados de los experimentos (graficas, metricas y salida de consola)` | Contenido de `resultados/` |
 | 6 | `docs: README con arquitectura, actividades y analisis comparativo RNN vs LSTM` | Este documento |
+| 7 | `docs: capturas de pantalla de la ejecucion en VS Code y del repositorio en GitHub` | Carpeta `capturas/` y sección 15 |
 
 Comandos usados, siguiendo la sección 6 de la guía. Hicimos un commit por cada etapa del desarrollo en lugar de un único commit inicial:
 
@@ -381,7 +383,39 @@ git remote add origin https://github.com/luid-dev/guia06-rnn-lstm-pytorch.git
 git push -u origin main
 ```
 
-## 15. Referencias
+## 15. Evidencias de ejecución y publicación
+
+### Ejecución en VS Code
+
+Ejecutamos el script como tarea de VS Code (`source venv/bin/activate && python practica_rnn.py`) en la terminal integrada. Los tiempos por época cambian un poco entre ejecuciones, pero las métricas de error son idénticas a las de las tablas.
+
+**1. Código y ejecución del script.** El final de la salida muestra la respuesta a la pregunta de análisis y el barrido de `SEQ_LEN`.
+
+![Ejecución en VS Code](capturas/01_vscode_ejecucion.png)
+
+**2. Inicio de la salida.** Actividad 1 (dimensiones de los tensores), entrenamiento del modelo base y desglose de parámetros de la Actividad 2.
+
+![Inicio de la salida en la terminal](capturas/02_vscode_terminal_inicio.png)
+
+**3. Final de la salida.** Tablas de las Actividades 2 y 3, memoria efectiva, reto LSTM y barrido de longitudes.
+
+![Final de la salida en la terminal](capturas/03_vscode_terminal_final.png)
+
+**4. Clase `LSTMModel` en el editor.**
+
+![Clase LSTMModel](capturas/04_vscode_codigo_lstm.png)
+
+### Repositorio publicado en GitHub
+
+**5. Repositorio público** con la estructura solicitada (`practica_rnn.py`, `README.md`, `.gitignore`) y un único contribuidor.
+
+![Repositorio en GitHub](capturas/05_github_repositorio.png)
+
+**6. Historial de commits 1 a 6**, hasta el commit del README. Los commits siguientes agregan estas capturas y corrigen el formato del README.
+
+![Historial de commits](capturas/06_github_commits.png)
+
+## 16. Referencias
 
 - Hochreiter, S., & Schmidhuber, J. (1997). Long Short-Term Memory. *Neural Computation, 9*(8), 1735-1780.
 - Bengio, Y., Simard, P., & Frasconi, P. (1994). Learning long-term dependencies with gradient descent is difficult. *IEEE Transactions on Neural Networks, 5*(2), 157-166.
